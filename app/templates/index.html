@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Watchtower Vision</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">LOCAL SECURITY SYSTEM</p>
+      <h1>Watchtower <span>Vision</span></h1>
+    </div>
+    <div class="system-controls">
+      <span id="connectionBadge" class="badge neutral">Connecting</span>
+      <button id="armButton" class="button primary">Arm system</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="metrics" aria-label="System metrics">
+      <article><span>Current risk</span><strong id="riskScore">--</strong><small id="riskSummary">Waiting for camera</small></article>
+      <article><span>Camera rate</span><strong id="fps">--</strong><small>frames per second</small></article>
+      <article><span>Events today</span><strong id="eventsToday">0</strong><small id="highRisk">0 high risk total</small></article>
+      <article><span>SMS alerts</span><strong id="smsMode">--</strong><small>Twilio delivery</small></article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel feed-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">LIVE VIEW</p><h2>Webcam monitor</h2></div>
+          <button id="drawZoneButton" class="button quiet">Draw zone</button>
+        </div>
+        <div class="camera-wrap" id="cameraWrap">
+          <img id="videoFeed" src="/video-feed" alt="Live annotated webcam stream">
+          <canvas id="zoneCanvas"></canvas>
+          <div id="cameraMessage" class="camera-message">Starting camera…</div>
+        </div>
+        <p id="zoneHelp" class="hint">Click “Draw zone,” then click at least three points on the video. Double-click to save.</p>
+      </article>
+
+      <aside class="panel settings-panel">
+        <div class="panel-heading"><div><p class="eyebrow">RULES</p><h2>Detection settings</h2></div></div>
+        <form id="rulesForm">
+          <label class="check-row"><input id="scheduleEnabled" type="checkbox"><span>Flag activity outside schedule</span></label>
+          <div class="time-grid">
+            <label>Active from<input id="activeFrom" type="time" value="22:00"></label>
+            <label>Active until<input id="activeUntil" type="time" value="06:00"></label>
+          </div>
+          <label>Watched objects<input id="watchLabels" type="text" value="person, car, truck, dog"></label>
+          <button class="button secondary" type="submit">Save rules</button>
+        </form>
+
+        <div class="divider"></div>
+        <div class="zone-header"><h3>Active zones</h3><button id="clearZones" class="text-button">Clear all</button></div>
+        <div id="zoneList" class="zone-list"></div>
+
+        <div class="divider"></div>
+        <h3>SMS connection</h3>
+        <p class="hint">Test alerts respect <code>SMS_DRY_RUN</code>. No text is sent while dry-run is enabled.</p>
+        <button id="testSms" class="button quiet">Send test alert</button>
+        <p id="toast" class="toast" role="status"></p>
+      </aside>
+    </section>
+
+    <section class="panel event-panel">
+      <div class="panel-heading"><div><p class="eyebrow">HISTORY</p><h2>Recent security events</h2></div><button id="refreshEvents" class="button quiet">Refresh</button></div>
+      <div id="eventList" class="event-list"><p class="empty-state">No events recorded yet.</p></div>
+    </section>
+  </main>
+  <script src="/static/dashboard.js" defer></script>
+</body>
+</html>
+
