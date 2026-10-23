@@ -29,6 +29,9 @@ dev = [
 [tool.setuptools.packages.find]
 include = ["app*"]
 
+[tool.setuptools.package-data]
+app = ["static/*.js", "static/*.css", "templates/*.html"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
@@ -36,3 +39,4 @@ addopts = "-q"
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+

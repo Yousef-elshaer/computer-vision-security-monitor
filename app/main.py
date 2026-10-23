@@ -47,6 +47,7 @@ class ZonePayload(BaseModel):
     def normalized_points(cls, points: list[tuple[float, float]]):
         if any(not (0 <= x <= 1 and 0 <= y <= 1) for x, y in points):
             raise ValueError("Every point must be normalized between 0 and 1")
+        Zone("validation", tuple(points))
         return points
 
 
@@ -137,12 +138,12 @@ async def update_rules(payload: RulePayload):
         schedule_enabled=payload.schedule_enabled,
         active_from=payload.active_from,
         active_until=payload.active_until,
-        watch_labels=tuple(label.strip().lower() for label in payload.watch_labels if label.strip()),
+        watch_labels=tuple(dict.fromkeys(label.strip().lower() for label in payload.watch_labels if label.strip())),
     )
     if not rules.watch_labels:
         raise HTTPException(422, "At least one watched label is required")
     monitor.set_rules(rules)
-    return payload.model_dump()
+    return await get_rules()
 
 
 @app.post("/api/alerts/test")
@@ -151,4 +152,5 @@ async def test_alert():
         return {"status": monitor.queue_test_alert()}
     except Exception as exc:
         raise HTTPException(502, f"SMS provider error: {type(exc).__name__}") from exc
+
 

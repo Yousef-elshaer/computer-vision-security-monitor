@@ -28,6 +28,13 @@ class Zone:
             if not (0 <= x <= 1 and 0 <= y <= 1):
                 raise ValueError("Zone points must be normalized between 0 and 1")
 
+        area_twice = sum(
+            x1 * y2 - x2 * y1
+            for (x1, y1), (x2, y2) in zip(self.points, self.points[1:] + self.points[:1])
+        )
+        if abs(area_twice) <= 1e-12:
+            raise ValueError("A zone must enclose a nonzero area")
+
     def as_dict(self) -> dict:
         return {"name": self.name, "points": [list(point) for point in self.points], "enabled": self.enabled}
 
@@ -132,4 +139,5 @@ class ThreatEvaluator:
             summary += " outside the active schedule"
 
         return ThreatAssessment(score, level, summary, tuple(sorted(triggered_zones)), after_hours)
+
 
