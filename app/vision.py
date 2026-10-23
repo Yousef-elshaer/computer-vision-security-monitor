@@ -67,21 +67,27 @@ class ObjectDetector:
         self._load()
         if self._model is None:
             return []
-        results = self._model.predict(frame, conf=self.confidence, verbose=False, imgsz=640)
-        detections: list[Detection] = []
-        for result in results:
-            names = result.names
-            for box in result.boxes:
-                x1, y1, x2, y2 = (int(value) for value in box.xyxy[0].tolist())
-                class_id = int(box.cls[0].item())
-                detections.append(
-                    Detection(
-                        label=str(names[class_id]),
-                        confidence=float(box.conf[0].item()),
-                        box=(x1, y1, x2, y2),
+        try:
+            results = self._model.predict(frame, conf=self.confidence, verbose=False, imgsz=640)
+            detections: list[Detection] = []
+            for result in results:
+                names = result.names
+                for box in result.boxes:
+                    x1, y1, x2, y2 = (int(value) for value in box.xyxy[0].tolist())
+                    class_id = int(box.cls[0].item())
+                    detections.append(
+                        Detection(
+                            label=str(names[class_id]),
+                            confidence=float(box.conf[0].item()),
+                            box=(x1, y1, x2, y2),
+                        )
                     )
-                )
-        return detections
+            self.error = None
+            return detections
+        except Exception as exc:
+            self.error = str(exc)
+            logger.exception("YOLO inference failed; continuing with motion detection")
+            return []
 
 
 def draw_overlay(
@@ -114,4 +120,5 @@ def draw_overlay(
     cv2.rectangle(canvas, (0, 0), (width, 34), (18, 24, 35), -1)
     cv2.putText(canvas, banner, (12, 23), cv2.FONT_HERSHEY_SIMPLEX, 0.56, (245, 247, 250), 2)
     return canvas
+
 

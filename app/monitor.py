@@ -252,8 +252,14 @@ class SecurityMonitor:
         timestamp = packet.source.captured_at
         filename = f"{timestamp.strftime('%Y%m%dT%H%M%S_%f')}.jpg"
         path = self.config.snapshot_dir / filename
-        path.parent.mkdir(parents=True, exist_ok=True)
-        cv2.imwrite(str(path), annotated)
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            snapshot_saved = cv2.imwrite(str(path), annotated)
+        except (cv2.error, OSError):
+            logger.exception("Snapshot could not be saved")
+            snapshot_saved = False
+        if not snapshot_saved:
+            logger.warning("Could not save event snapshot: %s", path)
 
         should_alert = assessment.score >= self.config.alert_threshold and now - self._last_alert_at >= self.config.alert_cooldown_seconds
         sms_status = "pending" if should_alert else "not-requested"
@@ -262,7 +268,7 @@ class SecurityMonitor:
             level=assessment.level,
             score=assessment.score,
             summary=assessment.summary,
-            snapshot=f"/snapshots/{filename}",
+            snapshot=f"/snapshots/{filename}" if snapshot_saved else None,
             detections=[item.as_dict() for item in packet.result.detections],
             sms_status=sms_status,
         )
@@ -286,3 +292,4 @@ class SecurityMonitor:
             except Exception as exc:
                 logger.exception("SMS delivery failed")
                 self.store.update_sms_status(job.event_id, f"failed: {type(exc).__name__}")
+
